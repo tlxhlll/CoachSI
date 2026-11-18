@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CoachSI: Self-Improvement of Robot Policies with a Language Coach</title>
+<meta name="description" content="CoachSI lets a robot policy improve itself with a language coach. A frozen VLM watches the robot and names the next step; fine-tuned on its coached successes, the policy completes long-horizon tasks on its own.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="CoachSI: Self-Improvement of Robot Policies with a Language Coach">
+<meta property="og:description" content="What the policy lacks is not a skill but the next step.">
+<meta property="og:image" content="static/img/fig_teaser.png">
+<link rel="icon" href="static/img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600&family=Noto+Sans:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="static/css/style.css">
+</head>
+<body>
+
+<!-- ============ Title, authors, links ============ -->
+<section class="hero">
+  <div class="container wide">
+    <h1>CoachSI: Self-Improvement of Robot Policies<br>with a Language Coach</h1>
+
+    <!-- To link an author, wrap the name: <a href="https://...">Name</a> -->
+    <p class="authors">
+      <span class="author">Jiachen Tao<sup>1</sup></span>
+      <span class="author">Gengyu Zhang<sup>1</sup></span>
+      <span class="author">Haoxuan Wang<sup>1</sup></span>
+      <span class="author">Bing Liu<sup>1</sup></span>
+      <span class="author">Yan Yan<sup>1</sup></span>
+    </p>
+    <p class="affil"><sup>1</sup>University of Illinois at Chicago</p>
+
+    <!-- When the paper or code is public, replace a "soon" pill with:
+         <a class="pill" href="https://...">…icon… Paper</a> -->
+    <div class="links">
+      <span class="pill soon">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2h8l5 5v15H6z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M14 2v5h5M9 13h7M9 17h7" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+        Paper (coming soon)
+      </span>
+      <span class="pill soon">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5M13.5 4l-3 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Code (coming soon)
+      </span>
+      <a class="pill" href="#videos">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="5" width="19" height="14" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 9.2v5.6l5-2.8z" fill="currentColor"/></svg>
+        Videos
+      </a>
+      <a class="pill" href="#bibtex">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 17V11a4 4 0 014-4M13 17V11a4 4 0 014-4M5 12h4v5H5zM13 12h4v5h-4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+        BibTeX
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ============ Teaser: CoachSI rollouts ============ -->
+<section class="teaser">
+  <div class="container">
+    <div class="tiles">
+      <figure class="tile"><video muted loop playsinline preload="metadata" data-autoplay poster="static/video/tile_fillkettle.jpg" src="static/video/tile_fillkettle.mp4"></video><figcaption>Fill Kettle</figcaption></figure>
+      <figure class="tile"><video muted loop playsinline preload="metadata" data-autoplay poster="static/video/tile_heatmug.jpg" src="static/video/tile_heatmug.mp4"></video><figcaption>Heat Mug</figcaption></figure>
+      <figure class="tile"><video muted loop playsinline preload="metadata" data-autoplay poster="static/video/tile_icetray.jpg" src="static/video/tile_icetray.mp4"></video><figcaption>Retrieve Ice Tray</figcaption></figure>
+      <figure class="tile"><video muted loop playsinline preload="metadata" data-autoplay poster="static/video/tile_cookware.jpg" src="static/video/tile_cookware.mp4"></video><figcaption>Transport Cookware</figcaption></figure>
+      <figure class="tile"><video muted loop playsinline preload="metadata" data-autoplay poster="static/video/tile_croissant.jpg" src="static/video/tile_croissant.mp4"></video><figcaption>Warm Croissant</figcaption></figure>
+      <figure class="tile"><video muted loop playsinline preload="metadata" data-autoplay poster="static/video/tile_dessert.jpg" src="static/video/tile_dessert.mp4"></video><figcaption>Dessert Upgrade</figcaption></figure>
+    </div>
+    <p class="note">CoachSI on long-horizon tasks in unseen scenes, from the task instruction alone, with no coach at test time. Videos play at 6× to 12× speed.</p>
+    <p class="tldr">CoachSI lets a robot policy improve itself with a language coach. A frozen VLM watches the robot and names the next step; fine-tuned on its coached successes, the policy completes long-horizon tasks on its own.</p>
+  </div>
+</section>
+
+<!-- ============ Abstract ============ -->
+<section class="band alt">
+  <div class="container">
+    <h2>Abstract</h2>
+    <div class="text">
+      <p>Generalist robot policies execute atomic skills reliably but fail when the same skills are composed into long-horizon tasks. Self-improvement from the policy's own experience does not close this gap: experience collected by the policy alone stays within its own distribution and reproduces what it can already do. We show that what the policy lacks is not a skill but the next step. We present CoachSI, a self-improvement method in which a frozen, off-the-shelf vision-language model (VLM) coaches the policy in language: it watches the robot and names the next step in the format of the policy's atomic instructions, and never outputs an action. Successful coached rollouts are relabeled in hindsight with the original task instruction and used to fine-tune the policy. The fine-tuned policy is then deployed on its own. On states where a World Action Model and a Vision-Language-Action model have stalled, naming the next step raises subgoal completion by 4.6× over the unchanged task instruction, and the frozen VLM supplies it from the same camera images the policy sees. After fine-tuning, unassisted success on long-horizon tasks in unseen scenes rises from 47.4% to 59.3%, 9.8 points above fine-tuning on human demonstrations and 7.3 points above fine-tuning on self-collected successes at an equal data budget. With a coach that sees only camera images, it reaches 56.8%, above both baselines. The gain is obtained with the action backbone frozen: language coaching teaches the policy what should happen next, and the skills it already has do the rest.</p>
+    </div>
+    <figure class="fig">
+      <img src="static/img/fig_teaser.png" width="2063" height="971" loading="lazy" alt="Three panels: the pretrained policy stalls under the task instruction; a frozen VLM coach names the next step and the same policy completes the task; fine-tuned on its coached successes, the policy completes the task alone. Below, bar charts of the main results.">
+    </figure>
+  </div>
+</section>
+
+<!-- ============ Method ============ -->
+<section class="band">
+  <div class="container">
+    <h2>Method</h2>
+    <div class="steps">
+      <div>
+        <h3>Coached collection</h3>
+        <p>At every action chunk, a frozen VLM coach reads the camera views and selects the policy's instruction from the next-step candidates of the task, or keeps the task instruction. The policy weights are fixed and every action is the policy's own.</p>
+      </div>
+      <div>
+        <h3>Hindsight relabeling and fine-tuning</h3>
+        <p>Successful rollouts keep their observations and actions, and the coach's instructions are replaced by the task instruction. Fine-tuning mixes them with human demonstrations and updates only the video backbone. The action backbone stays frozen.</p>
+      </div>
+      <div>
+        <h3>Deployment</h3>
+        <p>The fine-tuned policy receives its observations and the task instruction alone. No human operator, no reward model, and no VLM at test time.</p>
+      </div>
+    </div>
+    <figure class="fig">
+      <img src="static/img/fig_overview.png" width="2063" height="894" loading="lazy" alt="Overview of CoachSI: coached collection with a frozen VLM coach and a frozen policy; relabeling and fine-tuning of the video backbone only; deployment of the fine-tuned policy with no coach.">
+    </figure>
+  </div>
+</section>
+
+<!-- ============ Result 1: stalled states ============ -->
+<section class="band alt" id="videos">
+  <div class="container">
+    <h2>One next-step instruction resolves the stall</h2>
+    <div class="text">
+      <p>A stalled policy stays stalled under the task instruction. Across 500 stalled states from a World Action Model and a Vision-Language-Action model, it completes the next subgoal within 320 steps in 2.9% of continuations. Naming the next step raises that to 13.5%, a 4.6× gain, and a frozen VLM that sees only the camera images recovers 91% of it.</p>
+      <p>Each clip replays one recorded rollout up to the stall. From that state, the left side keeps the task instruction and the right side receives the coach's next step.</p>
+    </div>
+    <!-- A tab's data-clip is the file name (without extension) in static/video/ -->
+    <div class="viewer" data-viewer>
+      <div class="tabs" role="tablist" aria-label="Stalled-state clips">
+        <button role="tab" aria-selected="true" data-clip="stall_kettle">Kettle Boiling</button>
+        <button role="tab" aria-selected="false" data-clip="stall_icetray">Retrieve Ice Tray</button>
+        <button role="tab" aria-selected="false" data-clip="stall_snack">Snack Sorting</button>
+        <button role="tab" aria-selected="false" data-clip="stall_cup">Choose Measuring Cup</button>
+        <button role="tab" aria-selected="false" data-clip="stall_dishes">Dry Dishes</button>
+      </div>
+      <video muted loop playsinline preload="metadata" data-autoplay data-toggle tabindex="0" title="Click to pause or play" poster="static/video/stall_kettle.jpg" src="static/video/stall_kettle.mp4"></video>
+    </div>
+    <figure class="fig narrow">
+      <img src="static/img/fig_stall.png" width="1880" height="712" loading="lazy" alt="Share of stalled states completing the next subgoal over steps after the stall, for the task instruction, the oracle next-step instruction and the VLM coach; and the share of the oracle gain the VLM coach recovers: 101 percent with state, 91 percent from images only.">
+      <figcaption>Share of stalled states in which the policy completes the next subgoal, by steps after the stall, and the share of the oracle gain that a VLM coach recovers.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ============ Result 2: coached data collection ============ -->
+<section class="band">
+  <div class="container">
+    <h2>A frozen VLM coaches data collection</h2>
+    <div class="text">
+      <p>The coach watches the robot from the first step and tells the policy the next step. It never outputs an action. The successes it produces are ones the policy does not reach alone, and they become training data once relabeled with the task instruction.</p>
+      <p>Both sides start from the same initial state. Left: the pretrained policy alone. Right: the same policy with the image-only coach.</p>
+    </div>
+    <div class="viewer" data-viewer>
+      <div class="tabs" role="tablist" aria-label="Coached data collection clips">
+        <button role="tab" aria-selected="true" data-clip="coach_heatmug">Heat Mug</button>
+        <button role="tab" aria-selected="false" data-clip="coach_croissant">Warm Croissant</button>
+        <button role="tab" aria-selected="false" data-clip="coach_coffee">Prepare Coffee</button>
+      </div>
+      <video muted loop playsinline preload="metadata" data-autoplay data-toggle tabindex="0" title="Click to pause or play" poster="static/video/coach_heatmug.jpg" src="static/video/coach_heatmug.mp4"></video>
+    </div>
+  </div>
+</section>
+
+<!-- ============ Result 3: after fine-tuning ============ -->
+<section class="band alt">
+  <div class="container">
+    <h2>Coached experience becomes unassisted capability</h2>
+    <div class="text">
+      <p>After fine-tuning, the policy receives only the task instruction. On 18 long-horizon tasks in unseen scenes, unassisted success rises from 47.4% to 59.3%. Human demonstrations and the policy's own successes, at the same data budget, reach 49.4% and 51.9%.</p>
+    </div>
+    <figure class="bars" aria-label="Unassisted success on 18 long-horizon tasks in unseen scenes">
+      <div class="bar-row"><span class="bar-name">Pretrained policy</span><span class="bar-track"><span class="bar" style="--v:47.4"></span><span class="bar-val">47.4%</span></span></div>
+      <div class="bar-row"><span class="bar-name">+ Human demonstrations</span><span class="bar-track"><span class="bar" style="--v:49.4"></span><span class="bar-val">49.4%</span></span></div>
+      <div class="bar-row"><span class="bar-name">+ Self-collected successes</span><span class="bar-track"><span class="bar" style="--v:51.9"></span><span class="bar-val">51.9%</span></span></div>
+      <div class="bar-row is-ours"><span class="bar-name">CoachSI, image-only coach</span><span class="bar-track"><span class="bar" style="--v:56.8"></span><span class="bar-val">56.8%</span></span></div>
+      <div class="bar-row is-ours"><span class="bar-name">CoachSI, state-based coach</span><span class="bar-track"><span class="bar" style="--v:59.3"></span><span class="bar-val">59.3%</span></span></div>
+      <figcaption>Unassisted success on 18 long-horizon tasks in unseen scenes. Task instruction only, no coach at test time; 1,080 episodes per policy.</figcaption>
+    </figure>
+    <div class="text">
+      <p>Same initial state, same task instruction, no coach. Left: the pretrained policy. Right: CoachSI.</p>
+    </div>
+    <div class="viewer" data-viewer>
+      <div class="tabs" role="tablist" aria-label="Clips after fine-tuning">
+        <button role="tab" aria-selected="true" data-clip="after_fillkettle">Fill Kettle</button>
+        <button role="tab" aria-selected="false" data-clip="after_heatmug">Heat Mug</button>
+        <button role="tab" aria-selected="false" data-clip="after_icetray">Retrieve Ice Tray</button>
+        <button role="tab" aria-selected="false" data-clip="after_cookware">Transport Cookware</button>
+        <button role="tab" aria-selected="false" data-clip="after_cup">Choose Measuring Cup</button>
+        <button role="tab" aria-selected="false" data-clip="after_croissant">Warm Croissant</button>
+        <button role="tab" aria-selected="false" data-clip="after_dessert">Dessert Upgrade</button>
+      </div>
+      <video muted loop playsinline preload="metadata" data-autoplay data-toggle tabindex="0" title="Click to pause or play" poster="static/video/after_fillkettle.jpg" src="static/video/after_fillkettle.mp4"></video>
+    </div>
+    <p class="closing">Language coaching taught the policy the next step. The skills it already had did the rest.</p>
+  </div>
+</section>
+
+<!-- ============ BibTeX ============ -->
+<section class="band" id="bibtex">
+  <div class="container">
+    <h2>BibTeX</h2>
+    <div class="bib">
+      <button type="button" class="copy" data-copy="#bib-text">Copy</button>
+<pre id="bib-text">@misc{tao2026coachsi,
+  title  = {CoachSI: Self-Improvement of Robot Policies with a Language Coach},
+  author = {Tao, Jiachen and Zhang, Gengyu and Wang, Haoxuan and Liu, Bing and Yan, Yan},
+  year   = {2026}
+}</pre>
+    </div>
+  </div>
+</section>
+
+<footer>CoachSI project page</footer>
+
+<script src="static/js/main.js"></script>
+</body>
+</html>
